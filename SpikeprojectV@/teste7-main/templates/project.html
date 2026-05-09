@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <title>{{ project.nome }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+
+<div class="galaxy-bg"></div>
+<div class="planet planet1"></div>
+<div class="planet planet2"></div>
+
+<!-- HEADER -->
+<header>
+  <button class="logo-btn" title="Conta">👤</button>
+  <div class="search-wrap">
+    <form method="get" action="/" style="width:100%;display:flex;align-items:center;gap:8px;">
+      <span class="search-icon">🔍</span>
+      <input type="text" name="q" placeholder="Pesquisar..."/>
+    </form>
+  </div>
+  <a href="/" class="btn-back-header">← Voltar</a>
+</header>
+
+<main>
+  <div class="detail-grid">
+
+    <!-- COLUNA ESQUERDA: imagem -->
+    <div class="detail-left">
+      <div class="detail-img">🔭</div>
+    </div>
+
+    <!-- COLUNA DIREITA: info -->
+    <div class="detail-right">
+      <h1 class="detail-title">{{ project.nome }}</h1>
+
+      <div class="detail-meta">
+        <span class="badge badge-{{ project.status }}" id="statusBadge">
+          {% if project.status == 'intacto' %}✅{% elif project.status == 'avariado' %}❌{% else %}🔵{% endif %}
+          <span id="statusText">{{ project.status }}</span>
+        </span>
+
+        <!-- seletor de país -->
+        <select id="countrySelect" class="country-select" onchange="updateCountry()">
+          <option value="br" {% if project.pais == 'Brasil' %}selected{% endif %}>🇧🇷 Brasil</option>
+          <option value="us" {% if project.pais == 'Estados Unidos' %}selected{% endif %}>🇺🇸 Estados Unidos</option>
+          <option value="fr" {% if project.pais == 'França' %}selected{% endif %}>🇫🇷 França</option>
+          <option value="de" {% if project.pais == 'Alemanha' %}selected{% endif %}>🇩🇪 Alemanha</option>
+          <option value="jp" {% if project.pais == 'Japão' %}selected{% endif %}>🇯🇵 Japão</option>
+          <option value="it" {% if project.pais == 'Itália' %}selected{% endif %}>🇮🇹 Itália</option>
+          <option value="ru" {% if project.pais == 'Rússia' %}selected{% endif %}>🇷🇺 Rússia</option>
+          <option value="cn" {% if project.pais == 'China' %}selected{% endif %}>🇨🇳 China</option>
+          <option value="gb" {% if project.pais == 'Reino Unido' %}selected{% endif %}>🇬🇧 Reino Unido</option>
+          <option value="ca" {% if project.pais == 'Canadá' %}selected{% endif %}>🇨🇦 Canadá</option>
+        </select>
+
+        <img id="flagImg" src="{{ project.bandeira }}" alt="Bandeira" class="flag-img"/>
+      </div>
+
+      <hr class="divider"/>
+
+      <p class="section-label">Descrição</p>
+      <textarea id="descArea" class="desc-area" rows="4" onblur="saveDesc()">{{ project.descricao }}</textarea>
+
+      <hr class="divider"/>
+
+      <p class="section-label">Passo a passo para o reparo</p>
+      <ul class="checklist" id="checklist"></ul>
+      <button class="btn-add-task" onclick="addTask()">＋ Adicionar novo item...</button>
+    </div>
+  </div>
+</main>
+
+<footer>background por <a href="https://br.freepik.com/vetores-gratis/fundo-gradiente-de-galaxia_14658088.htm" target="_blank">Freepik</a></footer>
+
+<script>
+const PROJECT_ID = {{ project.id }};
+const STATUS_ORIGINAL = "{{ project.get('status_original', project.status) }}";
+const COUNTRIES = {
+  br:'Brasil', us:'Estados Unidos', fr:'França', de:'Alemanha',
+  jp:'Japão', it:'Itália', ru:'Rússia', cn:'China', gb:'Reino Unido', ca:'Canadá'
+};
+
+// Estado local
+let passos = {{ project.passos | tojson }};
+let checks = {{ project.get('checks', []) | tojson }};
+
+// garante que checks tem tamanho igual a passos
+while (checks.length < passos.length) checks.push(false);
+
+function renderChecklist() {
+  const ul = document.getElementById('checklist');
+  ul.innerHTML = '';
+  passos.forEach((p, i) => {
+    const li = document.createElement('li');
+    li.className = 'task-item';
+    li.innerHTML = `
+      <div class="task-check${checks[i]?' checked':''}" onclick="toggleCheck(${i})"></div>
+      <span class="task-text${checks[i]?' done':''}"
+            contenteditable="true"
+            onblur="renameTask(${i}, this.innerText)">${p}</span>
+      <button class="task-delete" onclick="deleteTask(${i})" title="Remover">✕</button>
+    `;
+    ul.appendChild(li);
+  });
+  updateStatus();
+}
+
+function toggleCheck(i) {
+  checks[i] = !checks[i];
+  saveAll();
+  renderChecklist();
+}
+
+function renameTask(i, text) {
+  passos[i] = text.trim() || passos[i];
+  saveAll();
+}
+
+function deleteTask(i) {
+  passos.splice(i, 1);
+  checks.splice(i, 1);
+  saveAll();
+  renderChecklist();
+}
+
+function addTask() {
+  passos.push('Novo passo...');
+  checks.push(false);
+  saveAll();
+  renderChecklist();
+  // foca no novo item para editar
+  const items = document.querySelectorAll('.task-text');
+  const last = items[items.length - 1];
+  if (last) { last.focus(); document.execCommand('selectAll'); }
+}
+
+function saveDesc() {
+  const desc = document.getElementById('descArea').value;
+  fetch(`/api/projects/${PROJECT_ID}`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ descricao: desc })
+  });
+}
+
+function saveAll() {
+  fetch(`/api/projects/${PROJECT_ID}`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ passos, checks })
+  }).then(r => r.json()).then(d => {
+    updateBadge(d.status);
+  });
+}
+
+function updateStatus() {
+  if (STATUS_ORIGINAL === 'avariado') {
+    const allDone = passos.length > 0 && checks.slice(0, passos.length).every(Boolean);
+    updateBadge(allDone ? 'recuperado' : 'avariado');
+  }
+}
+
+function updateBadge(status) {
+  const badge = document.getElementById('statusBadge');
+  const txt = document.getElementById('statusText');
+  badge.className = 'badge badge-' + status;
+  const icons = {intacto:'✅', avariado:'❌', recuperado:'🔵'};
+  txt.innerText = status;
+  badge.innerHTML = (icons[status]||'') + ' <span id="statusText">' + status + '</span>';
+}
+
+function updateCountry() {
+  const code = document.getElementById('countrySelect').value;
+  const flag = `https://flagcdn.com/w40/${code}.png`;
+  document.getElementById('flagImg').src = flag;
+  fetch(`/api/projects/${PROJECT_ID}`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ bandeira: flag, pais: COUNTRIES[code] })
+  });
+}
+
+renderChecklist();
+</script>
+</body>
+</html>

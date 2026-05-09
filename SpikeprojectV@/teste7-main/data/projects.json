@@ -1,0 +1,90 @@
+[
+  {
+    "id": 1,
+    "nome": "Densidade óssea e muscular em microgravidade",
+    "status": "intacto",
+    "status_original": "intacto",
+    "descricao": "Estudo dos efeitos da microgravidade na densidade óssea e muscular dos astronautas.",
+    "bandeira": "https://flagcdn.com/w40/br.png",
+    "pais": "Brasil",
+    "passos": ["Montar experimentos com sensores", "Observar comportamento em órbita", "Comparar com simulações computacionais"],
+    "checks": [false, false, false]
+  },
+  {
+    "id": 2,
+    "nome": "Materiais resistentes à radiação espacial",
+    "status": "avariado",
+    "status_original": "avariado",
+    "descricao": "Análise de materiais expostos à radiação cósmica para avaliar resistência.",
+    "bandeira": "https://flagcdn.com/w40/us.png",
+    "pais": "Estados Unidos",
+    "passos": ["Avaliar dano ao experimento", "Identificar peças a substituir", "Remover peças danificadas com cuidado"],
+    "checks": [false, false, false]
+  },
+  {
+    "id": 3,
+    "nome": "Comportamento de fluidos em microgravidade",
+    "status": "avariado",
+    "status_original": "avariado",
+    "descricao": "Observação do comportamento de fluidos em ambiente sem gravidade.",
+    "bandeira": "https://flagcdn.com/w40/fr.png",
+    "pais": "França",
+    "passos": ["Montar experimentos com fluidos", "Observar comportamento em órbita", "Comparar com simulações computacionais"],
+    "checks": [false, false, false]
+  },
+  {
+    "id": 4,
+    "nome": "Microrganismos em ambiente extremo",
+    "status": "intacto",
+    "status_original": "intacto",
+    "descricao": "Estudo da sobrevivência de microrganismos em condições espaciais.",
+    "bandeira": "https://flagcdn.com/w40/de.png",
+    "pais": "Alemanha",
+    "passos": ["Coletar amostras", "Expor ao ambiente espacial", "Analisar resultados"],
+    "checks": [false, false, false]
+  },
+  {
+    "id": 5,
+    "nome": "Crescimento de plantas em microgravidade",
+    "status": "intacto",
+    "status_original": "intacto",
+    "descricao": "Pesquisa sobre cultivo de plantas em ambiente sem gravidade.",
+    "bandeira": "https://flagcdn.com/w40/jp.png",
+    "pais": "Japão",
+    "passos": ["Montar estufa experimental", "Monitorar crescimento em órbita", "Comparar com cultivo terrestre"],
+    "checks": [false, false, false]
+  },
+  {
+    "id": 6,
+    "nome": "Regeneração de tecidos em microgravidade",
+    "status": "avariado",
+    "status_original": "avariado",
+    "descricao": "Investigação sobre processos de regeneração celular em ambiente espacial.",
+    "bandeira": "https://flagcdn.com/w40/it.png",
+    "pais": "Itália",
+    "passos": ["Avaliar dano ao experimento", "Substituir componentes defeituosos", "Reiniciar coleta de dados"],
+    "checks": [false, false, false]
+  },
+  {
+    "id": 7,
+    "nome": "Comunicação por rádio no espaço",
+    "status": "intacto",
+    "status_original": "intacto",
+    "descricao": "Testes de transmissão e recepção de sinais de rádio em órbita.",
+    "bandeira": "https://flagcdn.com/w40/ru.png",
+    "pais": "Rússia",
+    "passos": ["Configurar antenas", "Realizar testes de transmissão", "Comparar qualidade do sinal"],
+    "checks": [false, false, false]
+  },
+  {
+    "id": 8,
+    "nome": "Cristalização de proteínas em microgravidade",
+    "status": "avariado",
+    "status_original": "avariado",
+    "descricao": "Estudo da cristalização de proteínas em ambiente sem gravidade.",
+    "bandeira": "https://flagcdn.com/w40/cn.png",
+    "pais": "China",
+    "passos": ["Montar experimentos de cristalização", "Observar formação de cristais", "Comparar com resultados terrestres"],
+    "checks": [false, false, false]
+  }
+]

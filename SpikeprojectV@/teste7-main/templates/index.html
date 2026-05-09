@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Athena Space</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+
+<!-- FUNDO -->
+<div class="galaxy-bg"></div>
+<div class="planet planet1"></div>
+<div class="planet planet2"></div>
+
+<!-- HEADER -->
+<header>
+  <button class="logo-btn" onclick="openLogin()" title="Entrar na conta">👤</button>
+
+  <div class="search-wrap">
+    <form method="get" action="/" style="width:100%;display:flex;align-items:center;gap:8px;">
+      <span class="search-icon">🔍</span>
+      <input type="text" name="q" placeholder="Pesquisar..." value="{{ query }}"/>
+    </form>
+  </div>
+
+  <button class="btn-add" onclick="openAddModal()">+ Novo Projeto</button>
+</header>
+
+<!-- MAIN -->
+<main>
+  <div class="projects-grid" id="grid">
+    {% for p in projects %}
+    <a href="/project/{{ p.id }}" class="card">
+      <div class="card-img">🔭</div>
+      <div class="card-body">
+        <h2>{{ p.nome }}</h2>
+        <span class="badge badge-{{ p.status }}">
+          {% if p.status == 'intacto' %}✅{% elif p.status == 'avariado' %}❌{% else %}🔵{% endif %}
+          {{ p.status }}
+        </span>
+      </div>
+    </a>
+    {% endfor %}
+    {% if not projects %}
+    <p class="no-results">Nenhum projeto encontrado.</p>
+    {% endif %}
+  </div>
+
+  <!-- PAGINAÇÃO (JS cuida de mostrar 8 por vez) -->
+  <div class="pagination" id="pagination"></div>
+</main>
+
+<!-- FOOTER -->
+<footer>background por <a href="https://br.freepik.com/vetores-gratis/fundo-gradiente-de-galaxia_14658088.htm" target="_blank">Freepik</a></footer>
+
+<!-- MODAL LOGIN -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <h3>Entrar na Conta</h3>
+    <input type="text" placeholder="Usuário" class="modal-input"/>
+    <input type="password" placeholder="Senha" class="modal-input"/>
+    <div class="modal-btns">
+      <button class="btn-confirm" onclick="closeLogin()">Entrar</button>
+      <button class="btn-cancel" onclick="closeLogin()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOVO PROJETO -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h3>Novo Projeto Científico</h3>
+    <input type="text" id="newNome" placeholder="Nome do projeto" class="modal-input"/>
+    <textarea id="newDesc" placeholder="Descrição" class="modal-input" rows="3"></textarea>
+    <select id="newStatus" class="modal-input">
+      <option value="intacto">Intacto</option>
+      <option value="avariado">Avariado</option>
+    </select>
+    <select id="newPais" class="modal-input" onchange="updateNewFlag()">
+      <option value="br">🇧🇷 Brasil</option>
+      <option value="us">🇺🇸 Estados Unidos</option>
+      <option value="fr">🇫🇷 França</option>
+      <option value="de">🇩🇪 Alemanha</option>
+      <option value="jp">🇯🇵 Japão</option>
+      <option value="it">🇮🇹 Itália</option>
+      <option value="ru">🇷🇺 Rússia</option>
+      <option value="cn">🇨🇳 China</option>
+      <option value="gb">🇬🇧 Reino Unido</option>
+      <option value="ca">🇨🇦 Canadá</option>
+    </select>
+    <div class="modal-btns">
+      <button class="btn-confirm" onclick="submitNewProject()">Criar</button>
+      <button class="btn-cancel" onclick="closeAddModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+<script>
+// Paginação
+const ITEMS_PER_PAGE = 8;
+const cards = Array.from(document.querySelectorAll('.card'));
+let currentPage = 1;
+const totalPages = Math.ceil(cards.length / ITEMS_PER_PAGE);
+
+function showPage(page) {
+  currentPage = page;
+  cards.forEach((c, i) => {
+    c.style.display = (i >= (page-1)*ITEMS_PER_PAGE && i < page*ITEMS_PER_PAGE) ? '' : 'none';
+  });
+  renderPagination();
+}
+
+function renderPagination() {
+  const pg = document.getElementById('pagination');
+  if (totalPages <= 1) { pg.innerHTML = ''; return; }
+  let html = `<button class="pg-btn" onclick="showPage(${Math.max(1,currentPage-1)})">‹</button>`;
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<button class="pg-btn${i===currentPage?' active':''}" onclick="showPage(${i})">${i}</button>`;
+  }
+  html += `<button class="pg-btn" onclick="showPage(${Math.min(totalPages,currentPage+1)})">›</button>`;
+  pg.innerHTML = html;
+}
+
+showPage(1);
+
+// Login modal
+function openLogin() { document.getElementById('loginModal').classList.add('open'); }
+function closeLogin() { document.getElementById('loginModal').classList.remove('open'); }
+
+// Add modal
+function openAddModal() { document.getElementById('addModal').classList.add('open'); }
+function closeAddModal() { document.getElementById('addModal').classList.remove('open'); }
+
+const COUNTRIES = {
+  br:'Brasil', us:'Estados Unidos', fr:'França', de:'Alemanha',
+  jp:'Japão', it:'Itália', ru:'Rússia', cn:'China', gb:'Reino Unido', ca:'Canadá'
+};
+function updateNewFlag() {}
+
+function submitNewProject() {
+  const nome = document.getElementById('newNome').value.trim();
+  if (!nome) { alert('Informe o nome do projeto'); return; }
+  const pais_code = document.getElementById('newPais').value;
+  fetch('/api/projects', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      nome,
+      descricao: document.getElementById('newDesc').value,
+      status: document.getElementById('newStatus').value,
+      bandeira: `https://flagcdn.com/w40/${pais_code}.png`,
+      pais: COUNTRIES[pais_code]
+    })
+  }).then(r => r.json()).then(d => {
+    if (d.ok) { closeAddModal(); location.href = `/project/${d.id}`; }
+  });
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
